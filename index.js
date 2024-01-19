@@ -10,9 +10,11 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 
 // Middleware to parse JSON requests
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 const urlMap = {};
+let counter = 1;
 
 // Function to validate and shorten URLs
 function shortenUrl(originalUrl, callback) {
@@ -28,36 +30,36 @@ function shortenUrl(originalUrl, callback) {
       return callback(new Error('Invalid hostname'));
     }
 
-    // Generate a short key (You can use a more sophisticated method)
-    const shortKey = Math.random().toString(36).slice(-6);
+    // Generate a short key (using a counter in this case)
+    const shortKey = counter++;
 
     // Store the mapping
     urlMap[shortKey] = originalUrl;
 
     // Construct the shortened URL
-    const shortenedUrl = `http://localhost:${port}/${shortKey}`;
+    const shortenedUrl = `http://localhost:${port}/api/shorturl/${shortKey}`;
 
-    callback(null, shortenedUrl);
+    callback(null, { original_url: originalUrl, short_url: shortenedUrl });
   });
 }
 
 // Endpoint to shorten URLs
-app.post('/shorten', (req, res) => {
+app.post('/api/shorturl', (req, res) => {
   const { url } = req.body;
 
-  shortenUrl(url, (err, shortenedUrl) => {
+  shortenUrl(url, (err, result) => {
     if (err) {
-      return res.status(400).json({ error: err.message });
+      return res.status(400).json({ error: 'invalid url' });
     }
 
-    res.json({ originalUrl: url, shortenedUrl });
+    res.json(result);
   });
 });
 
 // Endpoint to redirect to the original URL
-app.get('/:shortKey', (req, res) => {
+app.get('/api/shorturl/:shortKey', (req, res) => {
   const { shortKey } = req.params;
-  const originalUrl = urlMap[shortKey];
+  const originalUrl = urlMap[parseInt(shortKey)];
 
   if (!originalUrl) {
     return res.status(404).json({ error: 'URL not found' });
