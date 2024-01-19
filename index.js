@@ -13,6 +13,7 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// In-memory storage for URL mapping
 const urlMap = {};
 let counter = 1;
 
@@ -67,7 +68,6 @@ app.get('/api/shorturl/:shortKey', (req, res) => {
 
   res.redirect(originalUrl);
 });
-
 
 app.use('/public', express.static(`${process.cwd()}/public`));
 
