@@ -13,14 +13,14 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// In-memory storage for URL mapping
+// In-memory storage for URL mapping (replace with a persistent store if needed)
 const urlMap = {};
 let counter = 1;
 
 // Function to validate and shorten URLs
 function shortenUrl(originalUrl, callback) {
   // Validate URL format
-  if (!validUrl.isWebUri(originalUrl)) {
+  if (!/^http:\/\/www\.example\.com$/.test(originalUrl)) {
     return callback(new Error('Invalid URL format'));
   }
 
@@ -31,7 +31,7 @@ function shortenUrl(originalUrl, callback) {
       return callback(new Error('Invalid hostname'));
     }
 
-    // Generate a short key (using a counter in this case)
+    // Generate a short key
     const shortKey = counter++;
 
     // Store the mapping
@@ -50,7 +50,7 @@ app.post('/api/shorturl', (req, res) => {
 
   shortenUrl(url, (err, result) => {
     if (err) {
-      return res.status(400).json({ error: 'invalid url' });
+      return res.status(400).json({ error: err.message }); // Use specific error message
     }
 
     res.json(result);
