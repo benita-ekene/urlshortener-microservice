@@ -44,6 +44,31 @@ function shortenUrl(originalUrl, callback) {
   });
 }
 
+// // Endpoint to shorten URLs
+// app.post('/api/shorturl', (req, res) => {
+//   const { url } = req.body;
+
+//   shortenUrl(url, (err, result) => {
+//     if (err) {
+//       return res.status(400).json({ error: 'invalid url' });
+//     }
+
+//     res.json(result);
+//   });
+// });
+
+// // Endpoint to redirect to the original URL
+// app.get('/api/shorturl/:shortKey', (req, res) => {
+//   const { shortKey } = req.params;
+//   const originalUrl = urlMap[parseInt(shortKey)];
+
+//   if (!originalUrl) {
+//     return res.status(404).json({ error: 'URL not found' });
+//   }
+
+//   res.redirect(originalUrl);
+// });
+
 // Endpoint to shorten URLs
 app.post('/api/shorturl', (req, res) => {
   const { url } = req.body;
@@ -68,6 +93,7 @@ app.get('/api/shorturl/:shortKey', (req, res) => {
 
   res.redirect(originalUrl);
 });
+
 
 app.use('/public', express.static(`${process.cwd()}/public`));
 
