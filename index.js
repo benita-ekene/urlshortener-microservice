@@ -18,6 +18,40 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+
+
+app.get('/api/shorturl/:short_url', async (req, res) => {
+  const { short_url } = req.params;
+
+  try {
+    const findOne = await URL.findOne({ short_url });
+
+    if (!findOne) {
+      return res.status(404).json({ error: 'short_url not found' });
+    }
+
+    res.redirect(findOne.original_url);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json('This is a server error');
+  }
+});
+
+app.use('/public', express.static(`${process.cwd()}/public`));
+
+app.get('/', function(req, res) {
+  res.sendFile(process.cwd() + '/views/index.html');
+});
+
+app.get("/styles", (req, res) => {
+  res.sendFile(process.cwd() + "/public/style.css")
+})
+
+// Your first API endpoint
+app.get('/api/hello', function(req, res) {
+  res.json({ greeting: 'hello API' });
+});
+
 const Schema = mongoose.Schema;
 const urlSchema = new Schema({
   original_url: {
@@ -65,38 +99,6 @@ app.post('/api/shorturl', async (req, res) => {
     console.error(err);
     res.status(500).json('This is a server error');
   }
-});
-
-app.get('/api/shorturl/:short_url', async (req, res) => {
-  const { short_url } = req.params;
-
-  try {
-    const findOne = await URL.findOne({ short_url });
-
-    if (!findOne) {
-      return res.status(404).json({ error: 'short_url not found' });
-    }
-
-    res.redirect(findOne.original_url);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json('This is a server error');
-  }
-});
-
-app.use('/public', express.static(`${process.cwd()}/public`));
-
-app.get('/', function(req, res) {
-  res.sendFile(process.cwd() + '/views/index.html');
-});
-
-app.get("/styles", (req, res) => {
-  res.sendFile(process.cwd() + "/public/style.css")
-})
-
-// Your first API endpoint
-app.get('/api/hello', function(req, res) {
-  res.json({ greeting: 'hello API' });
 });
 
 app.listen(port, function() {
