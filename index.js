@@ -18,7 +18,6 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-
 const Schema = mongoose.Schema;
 const urlSchema = new Schema({
   original_url: {
@@ -84,7 +83,6 @@ app.get('/api/shorturl/:short_url', async (req, res) => {
     res.status(500).json('This is a server error');
   }
 });
-
 
 app.use('/public', express.static(`${process.cwd()}/public`));
 
