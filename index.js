@@ -19,12 +19,15 @@ mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTop
 
 app.use(BodyParser.json());
 app.use(BodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 
+app.get('/', function(req, res) {
+  res.sendFile(process.cwd() + '/views/index.html');
+});
 
-app.get('/', (req, res) =>
-	res.sendFile(path.join(__dirname, '/views/index.html')),
-);
+app.use('/public', express.static(`${process.cwd()}/public`));
+app.get("/style", (req, res) => {
+  res.sendFile(process.cwd() + 'public/style.css')
+})
 
 // Your first API endpoint
 app.post('/api/shorturl', function(req, res) {
