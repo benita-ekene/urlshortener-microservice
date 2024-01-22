@@ -4,12 +4,15 @@ const mongoose = require('mongoose');
 const dns = require('dns');
 const validUrl = require('valid-url');
 const shortid = require('shortid');
-const path = require('path');
+const urlParser = require('url');
 const BodyParser = require('body-parser');
+const db = client.db('urlshortener')
+const urls = db.collection('urls')
 
 const app = express();
 
 var cors = require('cors');
+const { url } = require('inspector');
 app.use(cors({optionsSuccessStatus: 200}));
 
 const port = process.env.PORT || 3000;
@@ -31,7 +34,21 @@ app.get("/style", (req, res) => {
 
 // Your first API endpoint
 app.post('/api/shorturl', function(req, res) {
-  res.json({ greeting: 'hello API' });
+  url: req.body.url,
+  const dnsLookUp = dns.lookup(urlParser.parse(url).hostname, async(err, address) =< {
+    if(!address) {
+      res.json({Error: "Invalid url"})
+    }else{
+      const urlCount = await urls.countDocuments({})
+      const urlDoc = {
+        url,
+        shorturl: urlCount
+      }
+      const result = await urls.insertOne(urlDoc)
+      console.log(result)
+      res.json({original_url:url, shorturl: urlCount})
+    }
+  })
 });
 
 
