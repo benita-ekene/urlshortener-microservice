@@ -78,14 +78,21 @@ const app = express();
 const cors = require('cors');
 app.use(cors({ optionsSuccessStatus: 200 }));
 
-const mongoClient = new MongoClient(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+const mongoUri = process.env.MONGODB_URL;
+if (!mongoUri || !mongoUri.startsWith('mongodb://')) {
+  console.error('Invalid MongoDB connection string');
+  process.exit(1);
+}
+
+const mongoClient = new MongoClient(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 mongoClient.connect()
   .then(() => {
-    console.log("Database connection established");
+    console.log('Database connection established');
   })
   .catch((err) => {
-    console.error("Error connecting to the database", err);
+    console.error('Error connecting to the database', err);
+    process.exit(1);
   });
 
 const db = mongoClient.db('urlshortener');
