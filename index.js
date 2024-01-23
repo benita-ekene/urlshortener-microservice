@@ -69,27 +69,25 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const vu = require("valid-url");
-const mongo = require("mongodb");
+const validUrl = require("valid-url"); // Rename vu to a more descriptive name
 const mongoose = require("mongoose");
-const bp = require("body-parser");
-const sid = require("shortid");
-app.use(bp.urlencoded({ extended: false }));
-app.use(bp.json());
+const bodyParser = require("body-parser"); // Rename bp to a more descriptive name
+const shortid = require("shortid"); // Rename sid to a more descriptive name
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(cors());
 app.use('/public', express.static(`${process.cwd()}/public`));
 
-/////////////
-//VARIABLES///////////////////////////////////////////////////////////////
-/////////////
-
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
-  const db = mongoose.connection;
-  db.on('error', console.error.bind(console, 'connection error:'));
-  db.once('open', function() {
-    console.log("Connected to database.");
-  });
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'Connection error:'));
+db.once('open', function () {
+  console.log("Connected to database.");
+});
 
+// Define the Mongoose schema and model
 const Schema = mongoose.Schema;
 const urlSchema = new Schema({
   original_url: String,
@@ -97,47 +95,60 @@ const urlSchema = new Schema({
 });
 const ShortUrl = mongoose.model("ShortURL", urlSchema);
 
-/////////////
-//SECTION 1///////////////////////////////////////////////////////////////
-/////////////
-
-//Starting view 
-app.get('/', function(req, res) {
+// Starting view
+app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-//This is the get function that allows us to redirect to links
-app.get('/api/shorturl/:short', function(req, res) {
-  ShortUrl.find({short_url: req.params.short}).then(function (docs) {
-    res.redirect(docs[0].original_url);
-  });
+// Redirect to original URL using short URL
+app.get('/api/shorturl/:short', function (req, res) {
+  ShortUrl.findOne({ short_url: req.params.short })
+    .then(function (doc) {
+      if (doc) {
+        res.redirect(doc.original_url);
+      } else {
+        res.json({ error: "Short URL not found" });
+      }
+    })
+    .catch(function (err) {
+      console.error(err);
+      res.json({ error: "Internal server error" });
+    });
 });
 
-//This is the post function that allows us to receive links
+// Create a new short URL
 app.post("/api/shorturl/new", function (req, res) {
-  const url = vu.isWebUri(req.body.url);
-  if (url != undefined) {
-    let id = sid.generate();
+  const url = validUrl.isWebUri(req.body.url);
 
-    let newUrl = new ShortUrl({
+  if (url) {
+    const id = shortid.generate();
+
+    const newUrl = new ShortUrl({
       original_url: url,
       short_url: id,
     });
-    newUrl.save(function (err, doc) {
-      if(err) return console.error(err);
-      res.json({
-        original_url: newUrl.original_url,
-        short_url: newUrl.short_url
+
+    newUrl.save()
+      .then(function (doc) {
+        res.json({
+          original_url: doc.original_url,
+          short_url: doc.short_url
+        });
+      })
+      .catch(function (err) {
+        console.error(err);
+        res.json({ error: "Error saving to database" });
       });
-    });
-  }
-  else {
-    res.json({"error":"invalid URL"});
+  } else {
+    res.json({ error: "Invalid URL" });
   }
 });
 
-//Set the server port to whatever port is defined and make sure to be using cross-origin for testing
-app.listen(3000, function() {console.log(`Listening on port 3000`)});
+const PORT = process.env.PORT || 3000; // Use the provided port or default to 3000
+app.listen(PORT, function () {
+  console.log(`Listening on port ${PORT}`);
+});
+
 
 // require('dotenv').config();
 // const express = require('express');
