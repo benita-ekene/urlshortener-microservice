@@ -78,6 +78,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 app.use('/public', express.static(`${process.cwd()}/public`));
+app.use(express.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URL, {
