@@ -80,11 +80,15 @@ app.use(cors());
 app.use('/public', express.static(`${process.cwd()}/public`));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Connection error:'));
-db.once('open', function () {
-  console.log("Connected to database.");
+mongoose.connect(process.env.MONGODB_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => {
+  console.log('Connected to MongoDB');
+})
+.catch((error) => {
+  console.error('Error connecting to MongoDB:', error);
 });
 
 // Define the Mongoose schema and model
@@ -148,7 +152,6 @@ const PORT = process.env.PORT || 3000; // Use the provided port or default to 30
 app.listen(PORT, function () {
   console.log(`Listening on port ${PORT}`);
 });
-
 
 // require('dotenv').config();
 // const express = require('express');
