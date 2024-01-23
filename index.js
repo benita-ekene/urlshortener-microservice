@@ -122,7 +122,7 @@ app.get('/api/shorturl/:short', function (req, res) {
 });
 
 // Create a new short URL
-app.post("/api/shorturl/new", function (req, res) {
+app.post("/api/shorturl", function (req, res) {
   const url = validUrl.isWebUri(req.body.url);
 
   if (url) {
