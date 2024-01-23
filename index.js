@@ -61,84 +61,104 @@
 //   console.log(`Listening on port ${port}`);
 // });
 
-
-
-
-
-
-
 require('dotenv').config();
 const express = require('express');
-const { MongoClient } = require('mongodb');
-const dns = require('dns');
-const urlParser = require('url');
-const bodyParser = require('body-parser');
-
-const app = express();
 const cors = require('cors');
-app.use(cors({ optionsSuccessStatus: 200 }));
+const app = express();
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose')
+const dns = require('dns');
+app.use(cors());
 
-const mongoUri = process.env.MONGODB_URL;
-if (!mongoUri || !mongoUri.startsWith('mongodb://')) {
-  console.error('Invalid MongoDB connection string');
-  process.exit(1);
-}
-
-const mongoClient = new MongoClient(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
-
-mongoClient.connect()
-  .then(() => {
-    console.log('Database connection established');
-  })
-  .catch((err) => {
-    console.error('Error connecting to the database', err);
-    process.exit(1);
-  });
-
-const db = mongoClient.db('urlshortener');
-const urls = db.collection('urls');
-
+// Basic Configuration
 const port = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+mongoose.connect(process.env.MONGODB_URL)
+.then(() => { console.log("MongoDB Connection Established")})
+.catch(() => { console.log({Error: "Invalid connection"})})
 
-app.get('/', function (req, res) {
-  res.sendFile(process.cwd() + '/views/index.html');
-});
+
 
 app.use('/public', express.static(`${process.cwd()}/public`));
 
-app.get("/style", (req, res) => {
-  res.sendFile(process.cwd() + '/public/style.css');
+app.get('/', function(req, res) {
+  res.sendFile(process.cwd() + '/views/index.html');
 });
 
-app.post('/api/shorturl', function (req, res) {
-  const url = req.body.url;
-
-  // Validate URL
-  try {
-    new URL(url);
-  } catch (error) {
-    return res.json({ error: 'Invalid url' });
-  }
-
-  const dnsLookUp = dns.lookup(urlParser.parse(url).hostname, async (err, address) => {
-    if (!address) {
-      res.json({ error: "Invalid url" });
-    } else {
-      const urlCount = await urls.countDocuments({});
-      const urlDoc = {
-        url,
-        shorturl: urlCount
-      };
-      const result = await urls.insertOne(urlDoc);
-      console.log(result);
-      res.json({ original_url: url, shorturl: urlCount });
-    }
-  });
+// Your first API endpoint
+app.post('/api/shorturl', function(req, res) {
+  res.json({ greeting: 'hello API' });
 });
 
-app.listen(port, function () {
+app.listen(port, function() {
   console.log(`Listening on port ${port}`);
 });
+
+// require('dotenv').config();
+// const express = require('express');
+// const { MongoClient } = require('mongodb');
+// const dns = require('dns');
+// const urlParser = require('url');
+// const bodyParser = require('body-parser');
+
+// const app = express();
+// const cors = require('cors');
+// app.use(cors({ optionsSuccessStatus: 200 }));
+
+// const mongoClient = new MongoClient(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// mongoClient.connect()
+//   .then(() => {
+//     console.log("Database connection established");
+//   })
+//   .catch((err) => {
+//     console.error("Error connecting to the database", err);
+//   });
+
+// const db = mongoClient.db('urlshortener');
+// const urls = db.collection('urls');
+
+// const port = process.env.PORT || 3000;
+
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+
+// app.get('/', function (req, res) {
+//   res.sendFile(process.cwd() + '/views/index.html');
+// });
+
+// app.use('/public', express.static(`${process.cwd()}/public`));
+
+// app.get("/style", (req, res) => {
+//   res.sendFile(process.cwd() + '/public/style.css');
+// });
+
+// app.post('/api/shorturl', function (req, res) {
+//   const url = req.body.url;
+
+//   // Validate URL
+//   try {
+//     new URL(url);
+//   } catch (error) {
+//     return res.json({ error: 'Invalid url' });
+//   }
+
+//   const dnsLookUp = dns.lookup(urlParser.parse(url).hostname, async (err, address) => {
+//     if (!address) {
+//       res.json({ error: "Invalid url" });
+//     } else {
+//       const urlCount = await urls.countDocuments({});
+//       const urlDoc = {
+//         url,
+//         shorturl: urlCount
+//       };
+//       const result = await urls.insertOne(urlDoc);
+//       console.log(result);
+//       res.json({ original_url: url, shorturl: urlCount });
+//     }
+//   });
+// });
+
+// app.listen(port, function () {
+//   console.log(`Listening on port ${port}`);
+// });
