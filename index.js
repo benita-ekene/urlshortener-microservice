@@ -233,9 +233,9 @@ app.get('/', function (req, res) {
 // Redirect to original URL using short URL
 app.get('/api/shorturl/:short', function (req, res) {
   ShortUrl.findOne({ short_url: req.params.short })
-    .then(function (doc) {
-      if (doc) {
-        res.redirect(doc.original_url);
+    .then(function (foundUrl) {
+      if (foundUrl) {
+        res.redirect(foundUrl.original_url);
       } else {
         res.json({ error: "Short URL not found" });
       }
@@ -259,11 +259,11 @@ app.post("/api/shorturl", function (req, res) {
     });
 
     newUrl.save()
-      .then(function (doc) {
-        console.log('Document saved successfully:', doc);
+      .then(function (savedUrl) {
+        console.log('Document saved successfully:', savedUrl);
         res.json({
-          original_url: doc.original_url,
-          short_url: doc.short_url
+          original_url: savedUrl.original_url,
+          short_url: savedUrl.short_url
         });
       })
       .catch(function (err) {
@@ -278,8 +278,8 @@ app.post("/api/shorturl", function (req, res) {
 // Additional route to retrieve all stored short URLs (for testing purposes)
 app.get('/api/shorturl', function (req, res) {
   ShortUrl.find({}, 'original_url short_url')
-    .then(function (docs) {
-      res.json(docs);
+    .then(function (foundUrls) {
+      res.json(foundUrls);
     })
     .catch(function (err) {
       console.error(err);
