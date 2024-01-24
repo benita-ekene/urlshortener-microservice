@@ -120,46 +120,19 @@ mongoose.connect(process.env.MONGODB_URL, {
   });
 
 // Define the Mongoose schema and model
-const Schema = mongoose.Schema;
-const urlSchema = new Schema({
-  original_url: String,
+const urlSchema = new mongoose.Schema({
+  original_url: {
+    type: String,
+    required: true
+  },
   short_url: String
 });
 const ShortUrl = mongoose.model("ShortURL", urlSchema);
 
+
 // Starting view
 app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
-});
-
-
-// Create a new short URL
-app.post("/api/shorturl", function (req, res) {
-  const url = validUrl.isWebUri(req.body.url);
-
-  if (url) {
-    const id = shortid.generate();
-
-    const newUrl = new ShortUrl({
-      original_url: url,
-      short_url: id,
-    });
-
-    newUrl.save()
-      .then(function (doc) {
-        console.log('Document saved successfully:', doc);
-        res.json({
-          original_url: doc.original_url,
-          short_url: doc.short_url
-        });
-      })
-      .catch(function (err) {
-        console.error('Error saving document:', err);
-        res.json({ error: "Error saving to database" });
-      });
-  } else {
-    res.json({ error: "Invalid URL" });
-  }
 });
 
 // Redirect to original URL using short URL
@@ -177,6 +150,38 @@ app.get('/api/shorturl/:short', function (req, res) {
       res.json({ error: "Internal server error" });
     });
 });
+
+
+// Create a new short URL
+app.post("/api/shorturl", function (req, res) {
+  const url = validUrl.isWebUri(req.body.url);
+ 
+  if (url) {
+    const id = shortid.generate();
+
+    const newUrl = new ShortUrl({
+      original_url: url,
+      short_url: id,
+    });
+    console.log(req.body.url)
+    newUrl.save()
+      .then(function (doc) {
+        console.log('Document saved successfully:', doc);
+        res.json({
+          original_url: doc.original_url,
+          short_url: doc.short_url
+        });
+      })
+      .catch(function (err) {
+        console.error('Error saving document:', err);
+        res.json({ error: "Error saving to database" });
+      });
+  } else {
+    res.json({ error: "Invalid URL" });
+  }
+});
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, function () {
