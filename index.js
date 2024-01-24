@@ -132,21 +132,6 @@ app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-// Redirect to original URL using short URL
-app.get('/api/shorturl/:short', function (req, res) {
-  ShortUrl.findOne({ short_url: req.params.short })
-    .then(function (doc) {
-      if (doc) {
-        res.redirect(doc.original_url);
-      } else {
-        res.json({ error: "Short URL not found" });
-      }
-    })
-    .catch(function (err) {
-      console.error(err);
-      res.json({ error: "Internal server error" });
-    });
-});
 
 // Create a new short URL
 app.post("/api/shorturl", function (req, res) {
@@ -175,6 +160,22 @@ app.post("/api/shorturl", function (req, res) {
   } else {
     res.json({ error: "Invalid URL" });
   }
+});
+
+// Redirect to original URL using short URL
+app.get('/api/shorturl/:short', function (req, res) {
+  ShortUrl.findOne({ short_url: req.params.short })
+    .then(function (doc) {
+      if (doc) {
+        res.redirect(doc.original_url);
+      } else {
+        res.json({ error: "Short URL not found" });
+      }
+    })
+    .catch(function (err) {
+      console.error(err);
+      res.json({ error: "Internal server error" });
+    });
 });
 
 const PORT = process.env.PORT || 3000;
