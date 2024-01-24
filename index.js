@@ -232,7 +232,7 @@ app.get('/', function (req, res) {
 
 // Redirect to original URL using short URL
 app.get('/api/shorturl/:short', function (req, res) {
-  ShortUrl.findOne({ short_url: req.params.short })
+  ShortUrl.create({ short_url: req.params.short })
     .then(function (foundUrl) {
       if (foundUrl) {
         res.redirect(foundUrl.original_url);
